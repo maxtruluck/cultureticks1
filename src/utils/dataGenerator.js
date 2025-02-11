@@ -11,14 +11,59 @@ const pool = new Pool({
 });
 
 const eventTypes = [
-    'Concert', 'Festival', 'Theater', 'Comedy', 'Sports',
-    'Conference', 'Exhibition', 'Workshop', 'Seminar', 'Gala'
+    'Dance', 'Classical Music', 'Museums', 'Opera', 'Theater'
 ];
 
+const eventDescriptions = {
+    'Dance': [
+        'Contemporary Dance Performance',
+        'Ballet Production',
+        'Modern Dance Showcase',
+        'International Dance Festival',
+        'Dance Company Performance'
+    ],
+    'Classical Music': [
+        'Symphony Orchestra Concert',
+        'Chamber Music Performance',
+        'Philharmonic Orchestra',
+        'Classical Piano Recital',
+        'String Quartet Performance'
+    ],
+    'Museums': [
+        'Art Exhibition Opening',
+        'Museum After Hours',
+        'Special Collection Showcase',
+        'Curator\'s Tour',
+        'Interactive Exhibition'
+    ],
+    'Opera': [
+        'Grand Opera Performance',
+        'Opera Gala',
+        'Contemporary Opera Premiere',
+        'Opera Festival',
+        'Classical Opera Production'
+    ],
+    'Theater': [
+        'Broadway Musical',
+        'Classical Theater Production',
+        'Contemporary Play',
+        'Theater Festival',
+        'Experimental Theater'
+    ]
+};
+
+const venueTypes = {
+    'Dance': ['Dance Theater', 'Performance Hall', 'Cultural Center'],
+    'Classical Music': ['Concert Hall', 'Symphony Hall', 'Recital Hall'],
+    'Museums': ['Art Museum', 'Cultural Museum', 'Gallery'],
+    'Opera': ['Opera House', 'Grand Theater', 'Performance Center'],
+    'Theater': ['Playhouse', 'Theater', 'Arts Center']
+};
+
 const ticketTypes = [
-    { name: 'General', basePrice: 49.99 },
-    { name: 'VIP', basePrice: 149.99 },
-    { name: 'Premium', basePrice: 249.99 }
+    { name: 'Orchestra', basePrice: 129.99 },
+    { name: 'Mezzanine', basePrice: 89.99 },
+    { name: 'Balcony', basePrice: 59.99 }
 ];
 
 async function generateVenues(count) {
@@ -26,14 +71,17 @@ async function generateVenues(count) {
     const venues = [];
     
     for (let i = 0; i < count; i++) {
+        const eventType = faker.helpers.arrayElement(eventTypes);
+        const venueType = faker.helpers.arrayElement(venueTypes[eventType]);
+        
         const venue = {
-            name: `${faker.company.name()} ${faker.helpers.arrayElement(['Arena', 'Theater', 'Stadium', 'Hall', 'Center'])}`,
+            name: `${faker.location.city()} ${venueType}`,
             address: faker.location.streetAddress(),
             city: faker.location.city(),
             state: faker.location.state({ abbreviated: true }),
             zip: faker.location.zipCode(),
-            capacity: faker.number.int({ min: 1000, max: 50000 }),
-            description: faker.company.catchPhrase()
+            capacity: faker.number.int({ min: 500, max: 3000 }),
+            description: `A premier ${venueType.toLowerCase()} showcasing the finest in ${eventType.toLowerCase()}`
         };
 
         const result = await pool.query(`
@@ -42,7 +90,7 @@ async function generateVenues(count) {
             RETURNING id
         `, [venue.name, venue.address, venue.city, venue.state, venue.zip, venue.capacity, venue.description]);
 
-        venues.push({ ...venue, id: result.rows[0].id });
+        venues.push({ ...venue, id: result.rows[0].id, primaryType: eventType });
         console.log(`Created venue: ${venue.name}`);
     }
 
@@ -55,20 +103,22 @@ async function generateEvents(venues, count) {
 
     for (let i = 0; i < count; i++) {
         const venue = faker.helpers.arrayElement(venues);
-        const eventType = faker.helpers.arrayElement(eventTypes);
+        const eventType = venue.primaryType; // Use the venue's primary type
+        const eventName = faker.helpers.arrayElement(eventDescriptions[eventType]);
+        
         const startDate = faker.date.future();
         const endDate = new Date(startDate);
-        endDate.setHours(endDate.getHours() + faker.number.int({ min: 2, max: 8 }));
+        endDate.setHours(endDate.getHours() + 3); // Most cultural events are ~3 hours
 
         const event = {
-            name: `${faker.company.buzzPhrase()} ${eventType}`,
-            description: faker.lorem.paragraph(),
+            name: eventName,
+            description: `Experience ${eventName} at the renowned ${venue.name}. ${faker.lorem.paragraph()}`,
             event_type: eventType,
             start_date: startDate,
             end_date: endDate,
             venue_id: venue.id,
             status: 'upcoming',
-            organizer_id: 1, // Assuming we have at least one organizer
+            organizer_id: 1,
             image_url: faker.image.urlPicsumPhotos()
         };
 
@@ -98,14 +148,14 @@ async function generateEvents(venues, count) {
 async function generateTickets(eventId, venueCapacity) {
     // Distribute capacity among ticket types
     const totalTickets = venueCapacity;
-    const generalShare = Math.floor(totalTickets * 0.7); // 70% General
-    const vipShare = Math.floor(totalTickets * 0.2); // 20% VIP
-    const premiumShare = Math.floor(totalTickets * 0.1); // 10% Premium
+    const orchestraShare = Math.floor(totalTickets * 0.3); // 30% Orchestra
+    const mezzanineShare = Math.floor(totalTickets * 0.4); // 40% Mezzanine
+    const balconyShare = Math.floor(totalTickets * 0.3); // 30% Balcony
 
     const distribution = [
-        { type: 'General', count: generalShare, price: ticketTypes[0].basePrice },
-        { type: 'VIP', count: vipShare, price: ticketTypes[1].basePrice },
-        { type: 'Premium', count: premiumShare, price: ticketTypes[2].basePrice }
+        { type: 'Orchestra', count: orchestraShare, price: ticketTypes[0].basePrice },
+        { type: 'Mezzanine', count: mezzanineShare, price: ticketTypes[1].basePrice },
+        { type: 'Balcony', count: balconyShare, price: ticketTypes[2].basePrice }
     ];
 
     for (const ticketType of distribution) {

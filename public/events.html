@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CultureTicks - Premier Cultural Event Ticketing">
+    <meta name="theme-color" content="#2D3748">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico">
+    <title>CultureTicks - Cultural Events</title>
+    <style>
+        :root {
+            --primary-color: #2D3748;
+            --secondary-color: #4A5568;
+            --accent-color: #805AD5;
+            --background-color: #F7FAFC;
+            --text-color: #1A202C;
+            --text-muted: #718096;
+            --border-color: #E2E8F0;
+            --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --hover-bg: #EDF2F7;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .header {
+            background-color: white;
+            padding: 1.25rem;
+            box-shadow: var(--card-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1.5rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-color);
+        }
+
+        .filters {
+            background: white;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .filters-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .filter-pill {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-pill:hover {
+            background: var(--hover-bg);
+        }
+
+        .filter-pill.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        .events-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .event-card {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .event-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .event-date {
+            min-width: 100px;
+            text-align: center;
+            padding-right: 1.5rem;
+            border-right: 1px solid #eee;
+        }
+
+        .month {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .day {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .time {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .event-details {
+            flex: 1;
+            padding: 0 1.5rem;
+        }
+
+        .event-category {
+            color: #8B5CF6;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0.5rem 0;
+        }
+
+        .event-location {
+            display: flex;
+            align-items: center;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .event-location i {
+            margin-right: 0.5rem;
+            color: #8B5CF6;
+        }
+
+        .event-price {
+            text-align: right;
+            min-width: 150px;
+        }
+
+        .price-label {
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .price-amount {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.75rem;
+        }
+
+        .find-tickets-btn {
+            display: inline-block;
+            background: #8B5CF6;
+            color: white;
+            padding: 0.5rem 1.25rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .find-tickets-btn:hover {
+            background: #7C3AED;
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 20px;
+            background: #f3f4f6;
+            color: #666;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: #333;
+            color: white;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .search-btn {
+            padding: 0.75rem 2rem;
+            background: #8B5CF6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .search-btn:hover {
+            background: #7C3AED;
+        }
+
+        .footer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 3rem 1.5rem;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-section li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.875rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            color: rgba(255, 255, 255, 0.8);
+            transition: color 0.2s;
+        }
+
+        .social-links a:hover {
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .event-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .event-date {
+                min-width: 0;
+                padding-right: 0;
+                border-right: none;
+                margin-bottom: 1rem;
+            }
+
+            .event-price {
+                margin-top: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">CultureTicks</a>
+            <nav class="nav-links">
+                <a href="/events.html" id="homeLink">All Events</a>
+                <a href="#" id="myTicketsLink">My Tickets</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="eventsSection">
+            <div class="search-bar">
+                <input 
+                    type="search" 
+                    id="searchInput"
+                    class="search-input" 
+                    placeholder="Search by event name or venue..."
+                    aria-label="Search events">
+                <button id="searchButton" class="search-btn">Search</button>
+            </div>
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">All Events</button>
+                <button class="filter-btn" data-filter="weekend">This Weekend</button>
+                <button class="filter-btn" data-filter="month">This Month</button>
+            </div>
+            <div id="eventsGrid" class="events-grid">
+                <!-- Events will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <div id="myTicketsSection" style="display: none;">
+            <h2>My Tickets</h2>
+            <div id="ticketsList">
+                <!-- Tickets will be dynamically inserted here -->
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>About CultureTicks</h3>
+                <p>Your premier destination for cultural events and performances. Experience art, music, theater, and more.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Facebook">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/>
+                        </svg>
+                    </a>
+                    <a href="#" aria-label="Twitter">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/>
+                    </svg>
+                </a>
+                <a href="#" aria-label="Instagram">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+        <div class="footer-section">
+            <h3>Quick Links</h3>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/events.html">Events</a></li>
+                <li><a href="/venues.html">Venues</a></li>
+                <li><a href="/about.html">About Us</a></li>
+            </ul>
+        </div>
+        <div class="footer-section">
+            <h3>Support</h3>
+            <ul>
+                <li><a href="/faq.html">FAQ</a></li>
+                <li><a href="/contact.html">Contact Us</a></li>
+                <li><a href="/terms.html">Terms of Service</a></li>
+                <li><a href="/privacy.html">Privacy Policy</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2025 CultureTicks. All rights reserved.</p>
+    </div>
+</footer>
+
+    <script>
+        const eventsSection = document.querySelector('.events-section');
+        const myTicketsSection = document.querySelector('.my-tickets-section');
+        const eventsGrid = document.querySelector('.events-grid');
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const myTicketsLink = document.getElementById('myTicketsLink');
+        const filterPills = document.querySelectorAll('.filter-btn');
+        let currentEvents = [];
+        let currentPage = 1;
+        let isLoading = false;
+        let hasMore = true;
+        const eventsPerPage = 10;
+
+        // Infinite scroll observer
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && hasMore && !isLoading) {
+                        loadMoreEvents();
+                    }
+                });
+            },
+            { threshold: 0.1 }
+        );
+
+        filterPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                filterPills.forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                currentPage = 1;
+                hasMore = true;
+                eventsGrid.innerHTML = '';
+                loadEvents();
+            });
+        });
+
+        myTicketsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showMyTickets();
+        });
+
+        function showEvents() {
+            eventsSection.style.display = 'block';
+            myTicketsSection.style.display = 'none';
+            loadEvents();
+        }
+
+        function formatDate(dateString) {
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) {
+                    throw new Error('Invalid date');
+                }
+                return {
+                    month: date.toLocaleString('default', { month: 'short' }),
+                    day: date.getDate(),
+                    time: date.toLocaleTimeString(undefined, { 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        hour12: true 
+                    }),
+                    date: date
+                };
+            } catch (error) {
+                console.error('Error formatting date:', error);
+                return {
+                    month: 'TBA',
+                    day: '--',
+                    time: 'TBA',
+                    date: new Date()
+                };
+            }
+        }
+
+        async function loadEvents(append = false) {
+            if (isLoading) return;
+            
+            isLoading = true;
+            const activeFilter = document.querySelector('.filter-btn.active').dataset.filter;
+            
+            if (!append) {
+                eventsGrid.innerHTML = `
+                    <div class="loading-spinner"></div>
+                `;
+            }
+
+            try {
+                const response = await fetch('/api/events');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const events = await response.json();
+                
+                // Store all events for filtering
+                if (currentPage === 1) {
+                    currentEvents = events;
+                } else {
+                    currentEvents = [...currentEvents, ...events];
+                }
+
+                // Apply filtering if needed
+                if (activeFilter !== 'all') {
+                    filterEvents(activeFilter);
+                } else {
+                    renderEvents(events, append);
+                }
+
+                // Update pagination state
+                hasMore = events.length === eventsPerPage;
+            } catch (error) {
+                console.error('Error loading events:', error);
+                if (!append) {
+                    eventsGrid.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <div>Unable to load events. Please try again later.</div>
+                            <div style="font-size: 0.875rem; margin-top: 0.5rem;">${error.message}</div>
+                        </div>
+                    `;
+                }
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        function filterEvents(filter) {
+            const now = new Date();
+            const weekend = new Date(now);
+            weekend.setDate(now.getDate() + (6 - now.getDay()));
+            const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+            let filteredEvents = [...currentEvents];
+            
+            switch(filter) {
+                case 'weekend':
+                    filteredEvents = filteredEvents.filter(event => {
+                        const eventDate = new Date(event.start_date);
+                        return eventDate <= weekend && eventDate >= now;
+                    });
+                    break;
+                case 'month':
+                    filteredEvents = filteredEvents.filter(event => {
+                        const eventDate = new Date(event.start_date);
+                        return eventDate <= monthEnd && eventDate >= now;
+                    });
+                    break;
+            }
+            
+            renderEvents(filteredEvents, false);
+        }
+
+        function renderEvents(events, append = false) {
+            if (!events.length && !append) {
+                eventsGrid.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                        No events found for the selected criteria.
+                    </div>
+                `;
+                return;
+            }
+
+            const eventsHtml = events.map(event => {
+                const { month, day, time } = formatDate(event.start_date);
+                const venue = event.venue_name || 'Venue TBA';
+                const price = event.min_price ? `$${event.min_price}` : 'TBA';
+                
+                return `
+                    <div class="event-card">
+                        <div class="event-date">
+                            <div class="month">${month}</div>
+                            <div class="day">${day}</div>
+                            <div class="time">${time}</div>
+                        </div>
+                        <div class="event-details">
+                            <div class="event-category">${event.event_type || 'Event'}</div>
+                            <h3 class="event-title">${event.name}</h3>
+                            <div class="event-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span class="venue">${venue}</span>
+                            </div>
+                        </div>
+                        <div class="event-price">
+                            <div class="price-label">STARTING AT</div>
+                            <div class="price-amount">${price}</div>
+                            <a href="/select-tickets.html?eventId=${event.id}" class="find-tickets-btn">Find Tickets</a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            if (append) {
+                const loadingSpinner = document.getElementById('loading-spinner');
+                if (loadingSpinner) {
+                    loadingSpinner.remove();
+                }
+                eventsGrid.insertAdjacentHTML('beforeend', eventsHtml);
+            } else {
+                eventsGrid.innerHTML = eventsHtml;
+            }
+
+            // Add loading spinner for infinite scroll
+            if (hasMore) {
+                const loadingSpinner = document.createElement('div');
+                loadingSpinner.className = 'loading-spinner';
+                loadingSpinner.id = 'loading-spinner';
+                eventsGrid.appendChild(loadingSpinner);
+
+                // Observe the loading spinner
+                observer.observe(loadingSpinner);
+            }
+        }
+
+        async function loadMoreEvents() {
+            if (!hasMore || isLoading) return;
+            currentPage++;
+            await loadEvents(true);
+        }
+
+        async function handleSearch() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            if (!searchTerm) {
+                renderEvents(currentEvents);
+                return;
+            }
+
+            const filteredEvents = currentEvents.filter(event => {
+                return event.name.toLowerCase().includes(searchTerm) ||
+                       (event.venue_name && event.venue_name.toLowerCase().includes(searchTerm)) ||
+                       (event.event_type && event.event_type.toLowerCase().includes(searchTerm));
+            });
+            
+            renderEvents(filteredEvents);
+        }
+
+        searchButton.addEventListener('click', handleSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleSearch();
+            }
+        });
+
+        // Initialize the page
+        loadEvents();
+    </script>
+</body>
+</html>

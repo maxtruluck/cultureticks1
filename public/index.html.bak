@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CultureTicks - A modern event ticketing system">
+    <meta name="theme-color" content="#4A90E2">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico">
+    <title>CultureTicks - Event Ticketing</title>
+    <style>
+        :root {
+            --primary-color: #4A90E2;
+            --secondary-color: #2C3E50;
+            --accent-color: #E74C3C;
+            --background-color: #F8F9FA;
+            --text-color: #2C3E50;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .header {
+            background-color: white;
+            padding: 1rem;
+            box-shadow: var(--card-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .events-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .event-card {
+            display: grid;
+            grid-template-columns: 120px 1fr 150px;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e6e6e6;
+            background: white;
+            transition: background-color 0.2s;
+        }
+
+        .event-card:hover {
+            background-color: #f8f9fa;
+        }
+
+        .event-date {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .event-month {
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .event-day {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .event-time {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.2rem;
+        }
+
+        .event-content {
+            padding: 0 1.5rem;
+        }
+
+        .event-type {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #4A90E2;
+            background-color: #EBF5FF;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0.5rem 0;
+        }
+
+        .event-details {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .button {
+            background-color: #1755E8;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+            text-align: center;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+        }
+
+        .button:hover {
+            background-color: #1246C8;
+        }
+
+        @media (max-width: 768px) {
+            .event-card {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .event-content {
+                padding: 0;
+            }
+
+            .button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">
+                🎫 CultureTicks
+            </a>
+            <nav class="nav-links">
+                <a href="#" id="homeLink">All Events</a>
+                <a href="#" id="myTicketsLink">My Tickets</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Events Grid -->
+        <div id="eventsSection">
+            <h2>Upcoming Events</h2>
+            <div class="search-container">
+                <input 
+                    type="search" 
+                    id="eventSearch" 
+                    class="search-input" 
+                    placeholder="Search by event name or venue..."
+                    aria-label="Search events by name or venue">
+            </div>
+            <div id="eventsGrid" class="events-grid">
+                <!-- Events will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- My Tickets Section -->
+        <div id="myTicketsSection" class="my-tickets" style="display: none;">
+            <h2>My Tickets</h2>
+            <div id="ticketsList">
+                <!-- Tickets will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase Modal -->
+    <div id="purchaseModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Purchase Tickets</h2>
+            <div id="ticketOptions">
+                <!-- Ticket options will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer" class="alert"></div>
+
+    <script>
+        // DOM Elements
+        const eventsSection = document.getElementById('eventsSection');
+        const myTicketsSection = document.getElementById('myTicketsSection');
+        const eventsGrid = document.getElementById('eventsGrid');
+        const ticketsList = document.getElementById('ticketsList');
+        const purchaseModal = document.getElementById('purchaseModal');
+        const modalClose = document.querySelector('.close');
+        const homeLink = document.getElementById('homeLink');
+        const myTicketsLink = document.getElementById('myTicketsLink');
+        const alertContainer = document.getElementById('alertContainer');
+        const eventSearch = document.getElementById('eventSearch');
+
+        // Event Listeners
+        homeLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showEvents();
+        });
+
+        myTicketsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showMyTickets();
+        });
+
+        modalClose.addEventListener('click', () => {
+            purchaseModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === purchaseModal) {
+                purchaseModal.style.display = 'none';
+            }
+        });
+
+        // Helper Functions
+        function showAlert(message, type = 'success') {
+            alertContainer.textContent = message;
+            alertContainer.className = `alert alert-${type}`;
+            alertContainer.style.display = 'block';
+            setTimeout(() => {
+                alertContainer.style.display = 'none';
+            }, 5000);
+        }
+
+        async function showEvents() {
+            eventsSection.style.display = 'block';
+            myTicketsSection.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/events');
+                const events = await response.json();
+                
+                // Store events globally for filtering
+                window.allEvents = events;
+                
+                // Initial render of all events
+                renderEvents(events);
+            } catch (error) {
+                console.error('Error loading events:', error);
+                showAlert('Error loading events', 'error');
+            }
+        }
+
+        function renderEvents(events) {
+            eventsGrid.innerHTML = events.map(event => {
+                const startDate = new Date(event.start_date);
+                const month = startDate.toLocaleString('default', { month: 'short' });
+                const day = startDate.getDate();
+                const time = startDate.toLocaleTimeString(undefined, { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: true 
+                });
+                const venue = event.venue_name || 'Venue TBA';
+                
+                return `
+                    <div class="event-card">
+                        <div class="event-date">
+                            <span class="event-month">${month}</span>
+                            <span class="event-day">${day}</span>
+                            <span class="event-time">${time}</span>
+                        </div>
+                        <div class="event-content">
+                            <span class="event-type">${event.event_type}</span>
+                            <h3 class="event-title">${event.name}</h3>
+                            <div class="event-details">
+                                <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: currentColor; margin-right: 4px;">
+                                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+                                </svg>
+                                ${venue}
+                            </div>
+                        </div>
+                        <a href="/select-tickets.html?eventId=${event.id}" class="button">
+                            Find Tickets
+                        </a>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Add search functionality
+        eventSearch.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            if (!window.allEvents) return;
+            
+            const filteredEvents = window.allEvents.filter(event => 
+                event.name.toLowerCase().includes(searchTerm) ||
+                (event.venue_name && event.venue_name.toLowerCase().includes(searchTerm))
+            );
+            
+            renderEvents(filteredEvents);
+            
+            if (filteredEvents.length === 0 && searchTerm !== '') {
+                eventsGrid.innerHTML = `
+                    <div class="no-results" style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                        No events found matching "${e.target.value}"
+                    </div>
+                `;
+            }
+        });
+
+        async function showMyTickets() {
+            eventsSection.style.display = 'none';
+            myTicketsSection.style.display = 'block';
+
+            try {
+                const response = await fetch('/api/tickets/my-tickets');
+                const tickets = await response.json();
+                
+                if (tickets.length === 0) {
+                    ticketsList.innerHTML = '<p>You haven\'t purchased any tickets yet.</p>';
+                    return;
+                }
+
+                ticketsList.innerHTML = tickets.map(ticket => `
+                    <div class="ticket-card">
+                        <h3>${ticket.event_name}</h3>
+                        <p>Type: ${ticket.ticket_type}</p>
+                        <p>Status: ${ticket.status}</p>
+                        <p>Purchase Date: ${new Date(ticket.created_at).toLocaleDateString()}</p>
+                        ${ticket.status === 'sold' ? '<a href="/api/tickets/download/${ticket.id}" class="button">Download Ticket</a>' : ''}
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading tickets:', error);
+                showAlert('Error loading your tickets', 'error');
+            }
+        }
+
+        // Initialize the app
+        showEvents();
+    </script>
+</body>
+</html>

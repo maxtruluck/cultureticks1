@@ -6,6 +6,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 // Public routes
 router.get('/', eventController.getAllEvents);
 router.get('/:id', eventController.getEventById);
+router.get('/:id/seating', eventController.getEventSeating);
 
 // Protected routes (require authentication)
 router.post('/', authMiddleware.authenticate, eventController.createEvent);

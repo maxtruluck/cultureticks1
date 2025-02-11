@@ -15,12 +15,11 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
             padding: 0;
             background-color: var(--background-color);
             color: var(--text-color);
-            line-height: 1.6;
         }
 
         .header {
@@ -38,10 +37,10 @@
         }
 
         .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
             color: var(--primary-color);
             text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: bold;
         }
 
         .container {
@@ -51,88 +50,75 @@
         }
 
         .event-header {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
             margin-bottom: 2rem;
-            box-shadow: var(--card-shadow);
         }
 
         .event-title {
             margin: 0;
             color: var(--secondary-color);
-            font-size: 2rem;
         }
 
         .event-details {
-            margin-top: 1rem;
             color: #666;
+            margin-top: 0.5rem;
         }
 
-        .ticket-types {
-            display: grid;
-            gap: 1.5rem;
-        }
-
-        .ticket-card {
+        .ticket-category {
             background: white;
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 1.5rem;
+            margin-bottom: 1rem;
             box-shadow: var(--card-shadow);
-            display: grid;
-            grid-template-columns: 1fr auto;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 1rem;
         }
 
-        .ticket-info h3 {
+        .category-info h3 {
             margin: 0;
             color: var(--secondary-color);
         }
 
-        .ticket-price {
-            color: var(--accent-color);
-            font-weight: bold;
+        .price-amount {
             font-size: 1.25rem;
-            margin: 0.5rem 0;
+            font-weight: bold;
+            color: var(--accent-color);
         }
 
-        .ticket-description {
+        .fees-info {
+            font-size: 0.875rem;
             color: #666;
-            font-size: 0.9rem;
+            margin-top: 0.25rem;
         }
 
-        .ticket-quantity {
+        .quantity-selector {
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
         .quantity-btn {
-            background: var(--background-color);
+            background: var(--primary-color);
+            color: white;
             border: none;
             border-radius: 4px;
-            width: 32px;
-            height: 32px;
-            font-size: 1.25rem;
+            width: 30px;
+            height: 30px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.2s;
-        }
-
-        .quantity-btn:hover {
-            background-color: #E2E6EA;
         }
 
         .quantity-input {
             width: 50px;
             text-align: center;
-            border: 1px solid #DDD;
+            border: 1px solid #ddd;
             border-radius: 4px;
             padding: 0.25rem;
-            font-size: 1rem;
+        }
+
+        .available-info {
+            font-size: 0.875rem;
+            color: #666;
+            margin-top: 0.5rem;
         }
 
         .checkout-bar {
@@ -141,9 +127,8 @@
             left: 0;
             right: 0;
             background: white;
-            padding: 1rem;
             box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-            display: none;
+            padding: 1rem;
         }
 
         .checkout-content {
@@ -163,34 +148,23 @@
             background: var(--primary-color);
             color: white;
             border: none;
-            border-radius: 6px;
-            padding: 0.75rem 2rem;
+            border-radius: 4px;
+            padding: 0.75rem 1.5rem;
             font-size: 1rem;
-            font-weight: 500;
             cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .checkout-btn:hover {
-            background-color: #357ABD;
         }
 
         .checkout-btn:disabled {
-            background-color: #B8B8B8;
+            background: #ccc;
             cursor: not-allowed;
         }
 
         .alert {
+            background: #f8d7da;
+            color: #721c24;
             padding: 1rem;
-            border-radius: 6px;
+            border-radius: 4px;
             margin-bottom: 1rem;
-            display: none;
-        }
-
-        .alert-error {
-            background-color: #FDECEA;
-            color: var(--accent-color);
-            border: 1px solid #FAC5C0;
         }
     </style>
 </head>
@@ -201,161 +175,204 @@
         </div>
     </header>
 
-    <div class="container">
-        <div id="alert" class="alert alert-error"></div>
+    <main class="container">
+        <div class="alert" id="alert" style="display: none;"></div>
+        
         <div class="event-header">
-            <h1 id="eventTitle" class="event-title">Loading...</h1>
+            <h1 id="eventTitle"></h1>
             <div id="eventDetails" class="event-details"></div>
         </div>
 
         <div id="ticketTypes" class="ticket-types">
-            <!-- Ticket types will be inserted here -->
+            <!-- Ticket types will be loaded here -->
         </div>
-    </div>
+    </main>
 
-    <div id="checkoutBar" class="checkout-bar">
+    <div class="checkout-bar">
         <div class="checkout-content">
-            <div class="total-price">Total: $<span id="totalPrice">0</span></div>
-            <button id="checkoutBtn" class="checkout-btn" disabled>Proceed to Checkout</button>
+            <div class="total-price">
+                Total: <span id="totalPrice">$0.00</span>
+            </div>
+            <button id="checkout-button" class="checkout-btn" disabled>
+                Proceed to Checkout
+            </button>
         </div>
     </div>
 
     <script>
-        // Get event ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         const eventId = urlParams.get('eventId');
-        
-        // Elements
+        const selectedTickets = {};
         const eventTitle = document.getElementById('eventTitle');
         const eventDetails = document.getElementById('eventDetails');
         const ticketTypes = document.getElementById('ticketTypes');
-        const checkoutBar = document.getElementById('checkoutBar');
-        const totalPriceElement = document.getElementById('totalPrice');
-        const checkoutBtn = document.getElementById('checkoutBtn');
         const alert = document.getElementById('alert');
+        const checkoutBtn = document.getElementById('checkout-button');
+        const totalPrice = document.getElementById('totalPrice');
 
-        // State
-        let selectedTickets = {};
+        function updateQuantity(ticketType, change, setValue = null) {
+            const input = document.querySelector(`input[data-ticket-id="${ticketType}"]`);
+            const max = parseInt(input.getAttribute('max'));
+            
+            if (setValue !== null) {
+                input.value = Math.min(Math.max(0, parseInt(setValue) || 0), max);
+            } else {
+                const currentValue = parseInt(input.value) || 0;
+                input.value = Math.min(Math.max(0, currentValue + change), max);
+            }
+            
+            selectedTickets[ticketType] = parseInt(input.value);
+            
+            if (selectedTickets[ticketType] === 0) {
+                delete selectedTickets[ticketType];
+            }
+            
+            updateTotal();
+        }
 
-        // Load event details and ticket types
+        function updateTotal() {
+            let total = 0;
+            const tickets = document.querySelectorAll('.ticket-category');
+            
+            tickets.forEach(ticket => {
+                const type = ticket.querySelector('.quantity-input').dataset.ticketId;
+                const price = parseFloat(ticket.querySelector('.price-amount').textContent.replace('$', ''));
+                const quantity = selectedTickets[type] || 0;
+                total += price * quantity;
+            });
+            
+            totalPrice.textContent = `$${total.toFixed(2)}`;
+            checkoutBtn.disabled = total === 0;
+        }
+
         async function loadEventDetails() {
+            console.log('Loading event details for eventId:', eventId);
             try {
                 const response = await fetch(`/api/events/${eventId}`);
-                if (!response.ok) throw new Error('Event not found');
+                console.log('API response:', response);
+                if (!response.ok) throw new Error('Failed to load event');
                 
                 const event = await response.json();
+                console.log('Event data:', event);
                 
                 // Update event details
                 eventTitle.textContent = event.name;
                 eventDetails.innerHTML = `
-                    <div>📅 ${new Date(event.start_date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
-                    <div>⏰ ${new Date(event.start_date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })} - 
-                         ${new Date(event.end_date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}</div>
-                    <div>📍 ${event.venue.name}</div>
+                    <p>
+                        ${new Date(event.start_date).toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}
+                    </p>
+                    <p>${event.description || ''}</p>
                 `;
 
-                // Create ticket type cards
-                ticketTypes.innerHTML = event.tickets.map(ticket => `
-                    <div class="ticket-card">
-                        <div class="ticket-info">
-                            <h3>${ticket.type}</h3>
-                            <div class="ticket-price">$${Number(ticket.price).toFixed(2)}</div>
-                            <div class="ticket-description">${ticket.available} tickets available</div>
-                        </div>
-                        <div class="ticket-quantity">
-                            <button class="quantity-btn" onclick="updateQuantity('${ticket.type}', -1)">-</button>
-                            <input type="number" 
-                                   class="quantity-input" 
-                                   value="0" 
-                                   min="0" 
-                                   max="${ticket.available}"
-                                   data-ticket-type="${ticket.type}"
-                                   data-price="${Number(ticket.price)}"
-                                   onchange="updateQuantity('${ticket.type}', 0, this.value)">
-                            <button class="quantity-btn" onclick="updateQuantity('${ticket.type}', 1)">+</button>
-                        </div>
-                    </div>
-                `).join('');
+                // Render ticket types
+                if (!event.tickets || event.tickets.length === 0) {
+                    console.log('No tickets available');
+                    ticketTypes.innerHTML = '<p class="no-tickets">No tickets available for this event.</p>';
+                    return;
+                }
 
+                console.log('Rendering tickets:', event.tickets);
+                ticketTypes.innerHTML = event.tickets.map(ticket => {
+                    const price = Number(ticket.price);
+                    const basePrice = price * 0.9;
+                    const fees = price * 0.1;
+                    
+                    return `
+                        <div class="ticket-category">
+                            <div class="category-info">
+                                <h3>${ticket.ticket_type}</h3>
+                            </div>
+                            <div class="category-price">
+                                <span class="price-amount">$${price.toFixed(2)}</span>
+                                <div class="fees-info">
+                                    Base Price: $${basePrice.toFixed(2)} + Fees: $${fees.toFixed(2)}
+                                </div>
+                            </div>
+                            <div class="category-controls">
+                                <div class="quantity-selector">
+                                    <button class="quantity-btn" onclick="updateQuantity('${ticket.ticket_type}', -1)">-</button>
+                                    <input type="number" 
+                                           class="quantity-input" 
+                                           value="0"
+                                           min="0" 
+                                           max="${ticket.available_count}" 
+                                           data-ticket-id="${ticket.ticket_type}"
+                                           onchange="updateQuantity('${ticket.ticket_type}', 0, this.value)">
+                                    <button class="quantity-btn" onclick="updateQuantity('${ticket.ticket_type}', 1)">+</button>
+                                </div>
+                                <div class="available-info">
+                                    ${ticket.available_count} available
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                console.log('Rendered ticket types');
             } catch (error) {
-                console.error('Error loading event:', error);
-                alert.textContent = 'Error loading event details. Please try again.';
+                console.error('Error loading event details:', error);
+                alert.textContent = 'Unable to load event details. Please try again later.';
                 alert.style.display = 'block';
             }
         }
 
-        // Update ticket quantity
-        function updateQuantity(ticketType, change, setValue = null) {
-            const input = document.querySelector(`input[data-ticket-type="${ticketType}"]`);
-            const max = parseInt(input.max);
+        // Handle checkout button click
+        document.getElementById('checkout-button').addEventListener('click', async function() {
+            const selectedTickets = {};
+            let hasSelectedTickets = false;
             
-            let quantity;
-            if (setValue !== null) {
-                quantity = parseInt(setValue);
-            } else {
-                quantity = parseInt(input.value) + change;
-            }
-            
-            // Ensure quantity is within bounds
-            quantity = Math.max(0, Math.min(quantity, max));
-            input.value = quantity;
-            
-            // Update total
-            updateTotal();
-            
-            // Save to sessionStorage
-            saveTicketSelection();
-        }
-
-        // Update total price and checkout bar
-        function updateTotal() {
-            const inputs = document.querySelectorAll('.quantity-input');
-            let total = 0;
-            
-            const selectedTickets = [];
-            inputs.forEach(input => {
+            // Get all ticket inputs
+            const ticketInputs = document.querySelectorAll('.ticket-category .quantity-input');
+            ticketInputs.forEach(input => {
                 const quantity = parseInt(input.value);
                 if (quantity > 0) {
-                    const price = parseFloat(input.getAttribute('data-price'));
-                    total += price * quantity;
-                    selectedTickets.push({
-                        type: input.getAttribute('data-ticket-type'),
-                        quantity: quantity
-                    });
+                    hasSelectedTickets = true;
+                    selectedTickets[input.dataset.ticketId] = quantity;
                 }
             });
-            
-            totalPriceElement.textContent = total.toFixed(2);
-            
-            if (total > 0) {
-                checkoutBar.style.display = 'block';
-                checkoutBtn.disabled = false;
-            } else {
-                checkoutBar.style.display = 'none';
-                checkoutBtn.disabled = true;
-            }
-            
-            return selectedTickets;
-        }
 
-        // Save ticket selection to sessionStorage
-        function saveTicketSelection() {
-            const selectedTickets = updateTotal();
-            if (selectedTickets.length > 0) {
-                const ticketData = {
-                    eventId: eventId,
-                    tickets: selectedTickets
-                };
-                sessionStorage.setItem('selectedTickets', JSON.stringify(ticketData));
-            } else {
-                sessionStorage.removeItem('selectedTickets');
+            if (!hasSelectedTickets) {
+                alert('Please select at least one ticket');
+                return;
             }
-        }
 
-        // Handle checkout
-        checkoutBtn.addEventListener('click', () => {
-            // Redirect to purchase confirmation
-            window.location.href = `/purchase-confirmation.html?eventId=${eventId}`;
+            // Store selected tickets in session storage
+            sessionStorage.setItem('selectedTickets', JSON.stringify(selectedTickets));
+
+            // Build URL with ticket parameters
+            const ticketParams = Object.entries(selectedTickets).map(([type, quantity]) => 
+                `tickets[]=${encodeURIComponent(type)}:${quantity}`
+            ).join('&');
+
+            // Redirect to purchase confirmation page
+            window.location.href = `/purchase-confirmation.html?eventId=${eventId}&${ticketParams}`;
+        });
+
+        // Add event listener to release tickets if user leaves the page
+        window.addEventListener('beforeunload', async () => {
+            const lockedTickets = JSON.parse(sessionStorage.getItem('lockedTickets') || '[]');
+            if (lockedTickets.length > 0) {
+                try {
+                    await fetch('/api/tickets/release', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            event_id: eventId,
+                            ticket_ids: lockedTickets.map(t => t.id)
+                        })
+                    });
+                } catch (error) {
+                    console.error('Error releasing tickets:', error);
+                }
+            }
         });
 
         // Initialize

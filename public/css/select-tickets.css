@@ -1,0 +1,192 @@
+:root {
+    --primary-color: #4A90E2;
+    --secondary-color: #2C3E50;
+    --accent-color: #E74C3C;
+    --background-color: #F8F9FA;
+    --text-color: #2C3E50;
+    --border-color: #E2E6EA;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    
+    /* Price level colors */
+    --price-level-1: #4CAF50;
+    --price-level-2: #8BC34A;
+    --price-level-3: #FFC107;
+    --price-level-4: #FF9800;
+    --price-level-5: #F44336;
+}
+
+/* Selection Container */
+.selection-container {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Seating Map Section */
+.seating-map {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+}
+
+.map-controls {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.zoom-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.map-button {
+    background: var(--background-color);
+    border: none;
+    border-radius: 4px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.map-button:hover {
+    background-color: var(--border-color);
+}
+
+.map-container {
+    width: 100%;
+    height: 600px;
+    position: relative;
+    overflow: hidden;
+}
+
+.map-container svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Ticket Options Section */
+.ticket-options {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+    height: fit-content;
+}
+
+.price-filter {
+    margin-bottom: 2rem;
+}
+
+.price-range-slider {
+    margin: 2rem 0;
+}
+
+.price-range-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    color: var(--text-color);
+    font-size: 0.875rem;
+}
+
+/* Ticket Categories */
+.ticket-category {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.category-header h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    color: var(--text-color);
+}
+
+.rating-stars {
+    color: #FFB400;
+    font-size: 1.125rem;
+}
+
+.category-price {
+    margin-bottom: 1rem;
+}
+
+.price-amount {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.fees-info {
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.category-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.quantity-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.quantity-input {
+    width: 60px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.5rem;
+    font-size: 1rem;
+}
+
+/* Section Highlighting */
+.section-highlight {
+    transition: fill 0.2s;
+    cursor: pointer;
+}
+
+.section-highlight:hover {
+    opacity: 0.8;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 1024px) {
+    .selection-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .map-container {
+        height: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .selection-container {
+        padding: 1rem;
+    }
+    
+    .map-container {
+        height: 300px;
+    }
+}

@@ -60,27 +60,28 @@ exports.getAllEvents = async (req, res) => {
         res.json(events);
     } catch (error) {
         console.error('Error getting events:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Stack trace:', error.stack);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
 
 exports.getEventById = async (req, res) => {
     const eventId = req.params.id;
     try {
-        console.log('Fetching event with ID:', eventId);
-
-        // First query: Get event and venue details
+        console.log('Getting event with ID:', eventId);
+        
+        // Get event details
         const eventResult = await db.query(`
             SELECT 
-                e.*,
-                v.name as venue_name,
-                v.address as venue_address,
-                v.city as venue_city,
-                v.state as venue_state,
-                v.zip as venue_zip,
-                v.capacity as venue_capacity
+                e.id,
+                e.name,
+                e.description,
+                e.start_date,
+                e.end_date,
+                e.event_type,
+                e.status,
+                e.image_url
             FROM events e
-            LEFT JOIN venues v ON e.venue_id = v.id
             WHERE e.id = $1
         `, [eventId]);
 
@@ -93,46 +94,37 @@ exports.getEventById = async (req, res) => {
 
         const event = eventResult.rows[0];
 
-        // Second query: Get ticket types and availability
+        // Get ticket types and availability
+        console.log('Getting tickets for event:', eventId);
         const ticketsResult = await db.query(`
             SELECT 
-                ticket_type as type,
-                price::numeric as price,
-                COUNT(*) FILTER (WHERE status = 'available') as available
+                ticket_type,
+                price::numeric,
+                COUNT(*) FILTER (WHERE status = 'available') as available_count
             FROM tickets
-            WHERE event_id = $1
+            WHERE event_id = $1 AND status = 'available'
             GROUP BY ticket_type, price
-            HAVING COUNT(*) FILTER (WHERE status = 'available') > 0
+            ORDER BY price ASC
         `, [eventId]);
 
-        console.log('Tickets found:', ticketsResult.rows);
-        
+        console.log('Tickets query result:', ticketsResult.rows);
+
         // Format the response
-        const formattedEvent = {
-            id: event.id,
-            name: event.name,
-            description: event.description,
-            event_type: event.event_type,
-            start_date: event.start_date,
-            end_date: event.end_date,
-            status: event.status,
-            image_url: event.image_url,
-            venue: {
-                name: event.venue_name,
-                address: event.venue_address,
-                city: event.venue_city,
-                state: event.venue_state,
-                zip: event.venue_zip,
-                capacity: event.venue_capacity
-            },
-            tickets: ticketsResult.rows
+        const response = {
+            ...event,
+            tickets: ticketsResult.rows.map(ticket => ({
+                ticket_type: ticket.ticket_type,
+                price: ticket.price,
+                available_count: parseInt(ticket.available_count)
+            }))
         };
 
-        console.log('Sending formatted event:', formattedEvent);
-        res.json(formattedEvent);
+        console.log('Sending response:', response);
+        res.json(response);
     } catch (error) {
         console.error('Error getting event:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Stack trace:', error.stack);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
 
@@ -158,7 +150,8 @@ exports.createEvent = async (req, res) => {
         res.status(201).json(result.rows[0]);
     } catch (error) {
         console.error('Error creating event:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Stack trace:', error.stack);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
 
@@ -195,7 +188,8 @@ exports.updateEvent = async (req, res) => {
         res.json(result.rows[0]);
     } catch (error) {
         console.error('Error updating event:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Stack trace:', error.stack);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
 
@@ -211,6 +205,75 @@ exports.deleteEvent = async (req, res) => {
         res.json({ message: 'Event deleted successfully' });
     } catch (error) {
         console.error('Error deleting event:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Stack trace:', error.stack);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
+
+exports.getEventSeating = async (req, res) => {
+    try {
+        const eventId = req.params.id;
+        
+        // Get tickets for this event
+        const result = await db.query(`
+            SELECT 
+                ticket_type,
+                price,
+                COUNT(*) FILTER (WHERE status = 'available') as available_count
+            FROM tickets 
+            WHERE event_id = $1
+            GROUP BY ticket_type, price
+            ORDER BY price ASC
+        `, [eventId]);
+
+        // Convert ticket data to seating sections
+        const sections = result.rows.map(ticket => ({
+            id: ticket.ticket_type,
+            name: ticket.ticket_type,
+            type: 'seated',
+            available: ticket.available_count,
+            priceLevel: getPriceLevel(ticket.price),
+            tickets: [{
+                id: ticket.ticket_type,
+                price: {
+                    total: ticket.price,
+                    base: Math.floor(ticket.price * 0.9),
+                    fees: Math.ceil(ticket.price * 0.1)
+                }
+            }],
+            // Generate coordinates based on section name
+            coordinates: generateSectionPath(ticket.ticket_type)
+        }));
+
+        res.json({ sections });
+    } catch (error) {
+        console.error('Error getting event seating:', error);
+        console.error('Stack trace:', error.stack);
+        res.status(500).json({ error: 'Failed to load seating map', details: error.message });
+    }
+};
+
+// Helper function to generate SVG path for each section
+function generateSectionPath(sectionName) {
+    const sections = {
+        'Orchestra': 'M 300,600 Q 500,600 700,600 L 700,700 Q 500,700 300,700 Z',
+        'Mezzanine': 'M 250,400 Q 500,400 750,400 L 750,500 Q 500,500 250,500 Z',
+        'Balcony': 'M 200,200 Q 500,200 800,200 L 800,300 Q 500,300 200,300 Z',
+        'Left Wing': 'M 100,400 L 200,400 L 200,600 L 100,600 Z',
+        'Right Wing': 'M 800,400 L 900,400 L 900,600 L 800,600 Z',
+        'VIP Box Left': 'M 250,500 L 350,500 L 350,600 L 250,600 Z',
+        'VIP Box Right': 'M 650,500 L 750,500 L 750,600 L 650,600 Z',
+        'General': 'M 400,500 L 600,500 L 600,600 L 400,600 Z'
+    };
+    
+    return sections[sectionName] || sections['General'];
+}
+
+// Helper function to determine price level (1-5)
+function getPriceLevel(price) {
+    if (price < 50) return 1;
+    if (price < 100) return 2;
+    if (price < 150) return 3;
+    if (price < 200) return 4;
+    return 5;
+}

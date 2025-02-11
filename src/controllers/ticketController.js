@@ -1,66 +1,65 @@
 const db = require('../config/db');
 
 exports.getTicketsByEvent = async (req, res) => {
-    const eventId = req.params.eventId;
     try {
+        const eventId = req.params.eventId;
+        
+        // Get all ticket types and their availability for this event
         const result = await db.query(`
             SELECT 
                 ticket_type,
-                price,
+                price::numeric,
                 COUNT(*) FILTER (WHERE status = 'available') as available_count
             FROM tickets
             WHERE event_id = $1
             GROUP BY ticket_type, price
             ORDER BY price ASC
         `, [eventId]);
-        
-        console.log('Tickets found:', result.rows);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'No tickets found for this event' });
+        }
+
         res.json(result.rows);
     } catch (error) {
         console.error('Error getting tickets:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Failed to get tickets' });
     }
 };
 
 exports.purchaseTicket = async (req, res) => {
-    const { event_id, ticket_type } = req.body;
+    const { event_id, ticket_type, quantity } = req.body;
     const client = await db.pool.connect();
 
     try {
         await client.query('BEGIN');
 
-        // Find an available ticket
+        // Find available tickets
         const ticketResult = await client.query(`
-            SELECT id 
-            FROM tickets 
-            WHERE event_id = $1 
-            AND ticket_type = $2 
-            AND status = 'available' 
-            LIMIT 1
-            FOR UPDATE
-        `, [event_id, ticket_type]);
+            UPDATE tickets 
+            SET status = 'sold'
+            WHERE id IN (
+                SELECT id 
+                FROM tickets 
+                WHERE event_id = $1 
+                AND ticket_type = $2 
+                AND status = 'available' 
+                LIMIT $3
+            )
+            RETURNING id
+        `, [event_id, ticket_type, quantity]);
 
-        if (ticketResult.rows.length === 0) {
+        if (ticketResult.rowCount !== parseInt(quantity)) {
             await client.query('ROLLBACK');
-            return res.status(400).json({ error: 'No tickets available' });
+            return res.status(400).json({ error: 'Not enough tickets available' });
         }
 
-        const ticketId = ticketResult.rows[0].id;
-
-        // Update ticket status to sold
-        await client.query(`
-            UPDATE tickets 
-            SET status = 'sold',
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = $1
-        `, [ticketId]);
-
         await client.query('COMMIT');
-        res.json({ message: 'Ticket purchased successfully', ticketId });
+        res.json({ success: true, message: 'Tickets purchased successfully' });
     } catch (error) {
         await client.query('ROLLBACK');
         console.error('Error purchasing ticket:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Failed to purchase ticket' });
     } finally {
         client.release();
     }
@@ -113,74 +112,6 @@ exports.refundTicket = async (req, res) => {
     } catch (error) {
         await client.query('ROLLBACK');
         console.error(error);
-        res.status(500).json({ error: 'Internal server error' });
-    } finally {
-        client.release();
-    }
-};
-
-exports.createTicketBatch = async (req, res) => {
-    const { event_id, ticket_types } = req.body;
-    const client = await db.pool.connect();
-
-    try {
-        await client.query('BEGIN');
-
-        // Verify the event exists
-        const eventResult = await client.query('SELECT id FROM events WHERE id = $1', [event_id]);
-        if (eventResult.rows.length === 0) {
-            await client.query('ROLLBACK');
-            return res.status(404).json({ error: 'Event not found' });
-        }
-
-        // Create tickets for each ticket type
-        const createdTickets = [];
-        for (const ticketType of ticket_types) {
-            // Generate the specified quantity of tickets for this type
-            const values = Array(ticketType.quantity).fill({
-                event_id,
-                ticket_type: ticketType.type,
-                price: ticketType.price,
-                status: 'available'
-            });
-
-            // Build the multi-value insert query
-            const placeholders = values.map((_, index) => {
-                const base = index * 4;
-                return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4})`;
-            }).join(', ');
-
-            const flatValues = values.flatMap(v => [
-                v.event_id,
-                v.ticket_type,
-                v.price,
-                v.status
-            ]);
-
-            const query = `
-                INSERT INTO tickets (event_id, ticket_type, price, status)
-                VALUES ${placeholders}
-                RETURNING id, ticket_type, price, status
-            `;
-
-            const result = await client.query(query, flatValues);
-            createdTickets.push({
-                ticket_type: ticketType.type,
-                quantity: result.rowCount,
-                price: ticketType.price
-            });
-        }
-
-        await client.query('COMMIT');
-        console.log('Created tickets:', createdTickets);
-        res.status(201).json({
-            message: 'Tickets created successfully',
-            event_id,
-            tickets: createdTickets
-        });
-    } catch (error) {
-        await client.query('ROLLBACK');
-        console.error('Error creating ticket batch:', error);
         res.status(500).json({ error: 'Internal server error' });
     } finally {
         client.release();
