@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Purchase tickets for your favorite events">
+    <meta name="theme-color" content="#4A90E2">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/styles.css">
+    <title>Purchase Tickets - CultureTicks</title>
+</head>
+<body>
+    <div class="header">
+        <h1>🎫 CultureTicks</h1>
+        <div class="nav-links">
+            <a href="/">All Events</a>
+            <a href="/tickets.html">My Tickets</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="purchase-page">
+            <div class="event-header">
+                <a href="/" class="back-link">← Back to Events</a>
+                <h2 id="eventTitle">Loading event...</h2>
+            </div>
+
+            <div class="event-details">
+                <div class="event-info">
+                    <p id="eventDescription"></p>
+                    <div class="event-meta">
+                        <p id="eventDate"></p>
+                        <p id="eventTime"></p>
+                        <p id="eventLocation"></p>
+                    </div>
+                </div>
+                <div class="ticket-selection">
+                    <h3>Select Tickets</h3>
+                    <div id="ticketOptions" class="ticket-list">
+                        <!-- Ticket options will be inserted here -->
+                    </div>
+                </div>
+                <div class="order-summary">
+                    <h3>Order Summary</h3>
+                    <div id="orderDetails">
+                        <div class="summary-line">
+                            <span>Subtotal</span>
+                            <span id="subtotal">$0.00</span>
+                        </div>
+                        <div class="summary-line">
+                            <span>Service Fee (10%)</span>
+                            <span id="serviceFee">$0.00</span>
+                        </div>
+                        <div class="summary-line total">
+                            <span>Total</span>
+                            <span id="total">$0.00</span>
+                        </div>
+                    </div>
+                    <button id="purchaseButton" class="purchase-button">Continue to Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Container -->
+    <div id="alertContainer" style="position: fixed; top: 20px; right: 20px; z-index: 1000;"></div>
+
+    <script>
+        // Get event ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventId = urlParams.get('id');
+        
+        // DOM Elements
+        const ticketOptions = document.getElementById('ticketOptions');
+        const purchaseButton = document.getElementById('purchaseButton');
+
+        // State
+        let eventData = null;
+        let ticketTypes = null;
+        const selectedTickets = {};
+
+        function showAlert(message, type = 'success') {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            document.getElementById('alertContainer').appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        function formatMoney(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+
+        function updateOrderSummary() {
+            const subtotal = Object.entries(selectedTickets).reduce((total, [type, quantity]) => {
+                const ticket = ticketTypes.find(t => t.ticket_type === type);
+                return total + (ticket ? ticket.price * quantity : 0);
+            }, 0);
+
+            const serviceFee = subtotal * 0.10; // 10% service fee
+            const total = subtotal + serviceFee;
+
+            document.getElementById('subtotal').textContent = formatMoney(subtotal);
+            document.getElementById('serviceFee').textContent = formatMoney(serviceFee);
+            document.getElementById('total').textContent = formatMoney(total);
+
+            purchaseButton.disabled = Object.keys(selectedTickets).length === 0;
+        }
+
+        function updateTicketQuantity(ticketType, delta) {
+            const ticket = ticketTypes.find(t => t.ticket_type === ticketType);
+            if (!ticket) return;
+
+            const currentQuantity = selectedTickets[ticketType] || 0;
+            const newQuantity = Math.max(0, Math.min(currentQuantity + delta, ticket.available_count));
+
+            if (newQuantity === 0) {
+                delete selectedTickets[ticketType];
+            } else {
+                selectedTickets[ticketType] = newQuantity;
+            }
+
+            // Update display
+            const quantityElement = document.querySelector(`[data-ticket-type="${ticketType}"] .quantity`);
+            if (quantityElement) quantityElement.textContent = newQuantity;
+
+            // Update button states
+            const minusButton = document.querySelector(`[data-ticket-type="${ticketType}"] .minus-btn`);
+            const plusButton = document.querySelector(`[data-ticket-type="${ticketType}"] .plus-btn`);
+            if (minusButton) minusButton.disabled = newQuantity === 0;
+            if (plusButton) plusButton.disabled = newQuantity === ticket.available_count;
+            
+            updateOrderSummary();
+        }
+
+        async function loadEventAndTickets() {
+            console.log('Loading event and tickets for ID:', eventId);
+            try {
+                // Load event details
+                const eventResponse = await fetch(`/api/events/${eventId}`);
+                if (!eventResponse.ok) {
+                    throw new Error('Failed to load event details');
+                }
+                eventData = await eventResponse.json();
+                console.log('Event details:', eventData);
+
+                // Update event details
+                document.getElementById('eventTitle').textContent = eventData.title;
+                document.getElementById('eventDescription').textContent = eventData.description;
+                document.getElementById('eventDate').textContent = `📅 ${new Date(eventData.start_time).toLocaleDateString()}`;
+                document.getElementById('eventTime').textContent = `⏰ ${new Date(eventData.start_time).toLocaleTimeString()}`;
+                document.getElementById('eventLocation').textContent = `📍 ${eventData.location}`;
+
+                // Load ticket options
+                const ticketResponse = await fetch(`/api/tickets/event/${eventId}`);
+                if (!ticketResponse.ok) {
+                    throw new Error('Failed to load tickets');
+                }
+                ticketTypes = await ticketResponse.json();
+                console.log('Available tickets:', ticketTypes);
+
+                // Render ticket options
+                ticketOptions.innerHTML = ticketTypes.map(ticket => `
+                    <div class="ticket-option" data-ticket-type="${ticket.ticket_type}">
+                        <div class="ticket-info">
+                            <h4>${ticket.ticket_type}</h4>
+                            <p class="price">${formatMoney(ticket.price)}</p>
+                            <p class="availability">${ticket.available_count} available</p>
+                        </div>
+                        <div class="ticket-quantity">
+                            <button class="quantity-btn minus-btn" 
+                                    onclick="updateTicketQuantity('${ticket.ticket_type}', -1)"
+                                    disabled>−</button>
+                            <span class="quantity">0</span>
+                            <button class="quantity-btn plus-btn"
+                                    onclick="updateTicketQuantity('${ticket.ticket_type}', 1)">+</button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showAlert(error.message, 'error');
+            }
+        }
+
+        async function handlePurchase() {
+            console.log('Handling purchase');
+            console.log('Selected tickets:', selectedTickets);
+            
+            // Validate ticket selection
+            if (Object.keys(selectedTickets).length === 0) {
+                showAlert('Please select at least one ticket', 'error');
+                return;
+            }
+
+            // Calculate total amount in cents for Stripe
+            const subtotal = Object.entries(selectedTickets).reduce((total, [type, quantity]) => {
+                const ticket = ticketTypes.find(t => t.ticket_type === type);
+                console.log('Found ticket:', ticket, 'for type:', type);
+                return total + (ticket ? ticket.price * quantity : 0);
+            }, 0);
+            
+            console.log('Subtotal:', subtotal);
+            const serviceFee = Math.round(subtotal * 0.10); // 10% service fee
+            console.log('Service fee:', serviceFee);
+            const totalAmount = subtotal + serviceFee;
+            console.log('Total amount:', totalAmount);
+            const amountInCents = Math.round(totalAmount * 100);
+            console.log('Amount in cents:', amountInCents);
+
+            // Redirect to purchase confirmation page with selected tickets and amount
+            const ticketParams = encodeURIComponent(JSON.stringify(selectedTickets));
+            const redirectUrl = `/purchase-confirmation.html?eventId=${eventId}&tickets=${ticketParams}&amount=${amountInCents}`;
+            console.log('Redirecting to:', redirectUrl);
+            window.location.href = redirectUrl;
+        }
+
+        // Event Listeners
+        purchaseButton.addEventListener('click', handlePurchase);
+
+        // Initialize
+        if (!eventId) {
+            showAlert('No event selected', 'error');
+            window.location.href = '/';
+        } else {
+            loadEventAndTickets();
+        }
+    </script>
+</body>
+</html>

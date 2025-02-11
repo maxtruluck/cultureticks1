@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Purchase - CultureTicks</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        .payment-form {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #card-element {
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            background: white;
+            margin-bottom: 20px;
+        }
+        #card-errors {
+            color: #dc3545;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+        .order-summary {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .ticket-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .ticket-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .ticket-type {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        .ticket-price {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .ticket-total {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .summary-line:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .total {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2c3e50;
+            border-top: 2px solid #e0e0e0;
+            margin-top: 20px;
+            padding-top: 20px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #payment-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .info {
+            background-color: #cce5ff;
+            color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="payment-form">
+            <h1>Complete Your Purchase</h1>
+            
+            <div class="order-summary">
+                <h2>Order Summary</h2>
+                <div id="ticket-details"></div>
+                <div class="total">
+                    Total: <span id="total-amount">$0.00</span>
+                </div>
+            </div>
+
+            <form id="payment-form">
+                <div class="form-group">
+                    <label for="card-element">Credit or debit card</label>
+                    <div id="card-element"></div>
+                    <div id="card-errors" role="alert"></div>
+                </div>
+                <button type="submit" id="submit-button">Complete Purchase</button>
+            </form>
+
+            <div id="payment-status"></div>
+        </div>
+    </div>
+
+    <script>
+        let stripe;
+        let card;
+        let paymentIntentClientSecret = null;
+        let event = null; // Store event data globally
+
+        // Initialize Stripe with key from server
+        async function initializeStripe() {
+            try {
+                const response = await fetch('/api/config/stripe');
+                const data = await response.json();
+                stripe = Stripe(data.publishableKey);
+                const elements = stripe.elements();
+                card = elements.create('card');
+                card.mount('#card-element');
+            } catch (error) {
+                console.error('Error initializing Stripe:', error);
+                showStatus('Failed to initialize payment system', 'error');
+            }
+        }
+
+        // Initialize on page load
+        initializeStripe();
+
+        async function handlePayment(e) {
+            e.preventDefault();
+            const submitButton = document.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Processing...';
+
+            try {
+                const ticketData = getSelectedTickets();
+                if (!ticketData || !event) { // Check if event data is available
+                    throw new Error('Missing ticket or event data');
+                }
+
+                // Calculate total amount in cents
+                const total = ticketData.tickets.reduce((sum, ticket) => {
+                    const ticketType = event.tickets.find(t => t.type === ticket.type);
+                    if (!ticketType) {
+                        throw new Error(`Invalid ticket type: ${ticket.type}`);
+                    }
+                    return sum + (Number(ticketType.price) * ticket.quantity);
+                }, 0);
+
+                const amountInCents = Math.round(total * 100);
+
+                // Create payment intent
+                console.log('Creating payment intent:', {
+                    amount: amountInCents,
+                    eventId: ticketData.eventId,
+                    tickets: ticketData.tickets
+                });
+
+                const response = await fetch('/api/payment/create-payment-intent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        amount: amountInCents,
+                        eventId: ticketData.eventId,
+                        tickets: ticketData.tickets
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ details: 'Failed to create payment intent' }));
+                    throw new Error(errorData.details || 'Failed to create payment intent');
+                }
+
+                const { clientSecret } = await response.json();
+
+                // Process card payment
+                const { error: stripeError } = await stripe.confirmCardPayment(clientSecret, {
+                    payment_method: {
+                        card: card,
+                        billing_details: {}
+                    }
+                });
+
+                if (stripeError) {
+                    throw stripeError;
+                }
+
+                // Payment successful
+                submitButton.textContent = 'Payment Successful!';
+                sessionStorage.removeItem('selectedTickets');
+
+                // Redirect to success page
+                setTimeout(() => {
+                    window.location.href = '/purchase-success.html';
+                }, 2000);
+
+            } catch (error) {
+                console.error('Payment error:', error);
+                showStatus(error.message, 'error');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Complete Purchase';
+            }
+        }
+
+        // Add form submit handler
+        document.getElementById('payment-form').addEventListener('submit', handlePayment);
+
+        function showStatus(message, type) {
+            const paymentStatus = document.getElementById('payment-status');
+            paymentStatus.textContent = message;
+            paymentStatus.className = type;
+            paymentStatus.style.display = 'block';
+        }
+
+        function getSelectedTickets() {
+            try {
+                const ticketData = sessionStorage.getItem('selectedTickets');
+                console.log('Ticket data from sessionStorage:', ticketData);
+                
+                if (!ticketData) {
+                    console.error('No tickets found in sessionStorage');
+                    return null;
+                }
+                
+                const tickets = JSON.parse(ticketData);
+                console.log('Parsed tickets:', tickets);
+                return tickets;
+            } catch (error) {
+                console.error('Error getting tickets:', error);
+                return null;
+            }
+        }
+
+        // Display ticket details on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log('DOM Content Loaded');
+            const ticketData = getSelectedTickets();
+            console.log('Ticket data:', ticketData);
+
+            const orderSummary = document.querySelector('.order-summary');
+            
+            if (!ticketData || !ticketData.tickets || ticketData.tickets.length === 0) {
+                orderSummary.innerHTML = '<h2>Order Summary</h2><p>No tickets selected</p>';
+                document.querySelector('.total').innerHTML = 'Total: $0.00';
+                document.querySelector('button').disabled = true;
+                return;
+            }
+
+            // Get event details
+            try {
+                const response = await fetch(`/api/events/${ticketData.eventId}`);
+                if (!response.ok) {
+                    throw new Error('Failed to load event details');
+                }
+                event = await response.json(); // Store event data globally
+                console.log('Event details:', event);
+
+                // Create ticket items HTML
+                const ticketItemsHtml = ticketData.tickets.map(ticket => {
+                    const ticketType = event.tickets.find(t => t.type === ticket.type);
+                    if (!ticketType) {
+                        throw new Error(`Invalid ticket type: ${ticket.type}`);
+                    }
+                    const price = Number(ticketType.price);
+                    const subtotal = price * ticket.quantity;
+                    
+                    return `
+                        <div class="ticket-item">
+                            <div class="ticket-info">
+                                <span class="ticket-type">${ticket.type}</span>
+                                <span class="ticket-price">${ticket.quantity} × $${price.toFixed(2)}</span>
+                            </div>
+                            <span class="ticket-total">$${subtotal.toFixed(2)}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                // Calculate total
+                const total = ticketData.tickets.reduce((sum, ticket) => {
+                    const ticketType = event.tickets.find(t => t.type === ticket.type);
+                    if (!ticketType) {
+                        throw new Error(`Invalid ticket type: ${ticket.type}`);
+                    }
+                    return sum + (Number(ticketType.price) * ticket.quantity);
+                }, 0);
+
+                // Update order summary
+                orderSummary.innerHTML = `
+                    <h2>Order Summary</h2>
+                    <div class="event-details">
+                        <h3>${event.name}</h3>
+                        <p>${new Date(event.start_date).toLocaleDateString()} at ${new Date(event.start_date).toLocaleTimeString()}</p>
+                        <p>${event.venue.name}</p>
+                    </div>
+                    ${ticketItemsHtml}
+                    <div class="total">Total: $${total.toFixed(2)}</div>
+                `;
+
+                // Enable/disable purchase button based on total
+                document.querySelector('button').disabled = total <= 0;
+
+            } catch (error) {
+                console.error('Error loading event details:', error);
+                orderSummary.innerHTML = '<h2>Order Summary</h2><p>Error loading ticket details</p>';
+                document.querySelector('button').disabled = true;
+            }
+        });
+
+        // Handle card validation errors
+        card.addEventListener('change', ({ error }) => {
+            const displayError = document.getElementById('card-errors');
+            if (error) {
+                displayError.textContent = error.message;
+                displayError.style.display = 'block';
+            } else {
+                displayError.textContent = '';
+                displayError.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

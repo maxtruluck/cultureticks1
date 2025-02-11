@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ticket purchase successful">
+    <meta name="theme-color" content="#4A90E2">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="/styles.css">
+    <title>Purchase Successful - CultureTicks</title>
+    <style>
+        .success-container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .success-icon {
+            font-size: 64px;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        .success-message {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .ticket-details {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .ticket-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .ticket-item:last-child {
+            border-bottom: none;
+        }
+        .actions {
+            margin-top: 30px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .button.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .primary {
+            background: #4A90E2;
+            color: white;
+        }
+        .secondary {
+            background: #f8f9fa;
+            color: #2c3e50;
+            border: 1px solid #e0e0e0;
+        }
+        .download {
+            background: #4CAF50;
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎫 CultureTicks</h1>
+        <div class="nav-links">
+            <a href="/">All Events</a>
+            <a href="/tickets.html">My Tickets</a>
+        </div>
+    </div>
+
+    <div class="success-container">
+        <div class="success-icon">✅</div>
+        <h1 class="success-message">Purchase Successful!</h1>
+        <p>Thank you for your purchase. Your tickets have been confirmed.</p>
+        
+        <div class="ticket-details">
+            <h2>Order Summary</h2>
+            <div id="ticket-list">
+                <!-- Ticket details will be inserted here -->
+            </div>
+        </div>
+
+        <div class="actions">
+            <button onclick="downloadTickets()" class="button download">
+                ⬇️ Download Tickets
+            </button>
+            <a href="/" class="button secondary">
+                🔍 Browse More Events
+            </a>
+        </div>
+    </div>
+
+    <script>
+        let eventData = null;
+        let purchasedTickets = null;
+
+        async function downloadTickets() {
+            if (!eventData || !purchasedTickets) return;
+            
+            const downloadButton = document.querySelector('.download');
+            downloadButton.classList.add('disabled');
+            downloadButton.textContent = 'Generating tickets...';
+
+            try {
+                // Download each ticket type
+                for (const [type, quantity] of Object.entries(purchasedTickets)) {
+                    // For each ticket of this type
+                    for (let i = 0; i < quantity; i++) {
+                        const response = await fetch(`/api/tickets/download/${eventData.id}/${type}`);
+                        if (!response.ok) throw new Error('Failed to generate ticket');
+                        
+                        // Convert response to blob
+                        const blob = await response.blob();
+                        
+                        // Create download link
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `ticket-${type}-${i + 1}.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                    }
+                }
+                
+                downloadButton.textContent = '✅ Tickets Downloaded';
+                setTimeout(() => {
+                    downloadButton.classList.remove('disabled');
+                    downloadButton.textContent = '⬇️ Download Tickets';
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Error downloading tickets:', error);
+                downloadButton.textContent = '❌ Download Failed';
+                setTimeout(() => {
+                    downloadButton.classList.remove('disabled');
+                    downloadButton.textContent = '⬇️ Download Tickets';
+                }, 3000);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('eventId');
+            const ticketsParam = urlParams.get('tickets');
+            
+            try {
+                // Get event details
+                const eventResponse = await fetch(`/api/events/${eventId}`);
+                eventData = await eventResponse.json();
+
+                // Get ticket types
+                const ticketResponse = await fetch(`/api/tickets/event/${eventId}`);
+                const ticketTypes = await ticketResponse.json();
+
+                // Parse tickets
+                purchasedTickets = JSON.parse(decodeURIComponent(ticketsParam));
+                const ticketList = document.getElementById('ticket-list');
+
+                // Display ticket details
+                Object.entries(purchasedTickets).forEach(([type, quantity]) => {
+                    const ticketType = ticketTypes.find(t => t.ticket_type === type);
+                    if (!ticketType) return;
+
+                    const div = document.createElement('div');
+                    div.className = 'ticket-item';
+                    div.innerHTML = `
+                        <div>
+                            <strong>${eventData.title}</strong><br>
+                            <small>${type} × ${quantity}</small>
+                        </div>
+                        <div>
+                            ${new Intl.NumberFormat('en-US', {
+                                style: 'currency',
+                                currency: 'USD'
+                            }).format(ticketType.price * quantity)}
+                        </div>
+                    `;
+                    ticketList.appendChild(div);
+                });
+
+            } catch (error) {
+                console.error('Error loading ticket details:', error);
+            }
+        });
+    </script>
+</body>
+</html>
