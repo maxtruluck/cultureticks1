@@ -56,17 +56,31 @@
             color: var(--text-dark);
             font-size: 1.5rem;
             font-weight: 700;
+            transition: opacity 0.2s;
+        }
+
+        .logo:hover {
+            opacity: 0.9;
+        }
+
+        .logo img {
+            height: 40px;
+            width: auto;
         }
 
         .nav-center {
             display: flex;
-            gap: 2rem;
+            gap: 3rem;
         }
 
         .nav-center a {
-            text-decoration: none;
             color: var(--text-dark);
+            text-decoration: none;
             font-weight: 500;
+        }
+
+        .nav-center a:hover {
+            color: var(--primary-blue);
         }
 
         .nav-right {
@@ -103,154 +117,245 @@
 
         .hero {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-            padding: 4rem 2rem;
-            max-width: 1200px;
+            grid-template-columns: 55% 45%;
+            gap: 32px;
+            padding: 64px 48px;
+            max-width: 1440px;
             margin: 0 auto;
-            align-items: center;
+            align-items: start;
         }
 
         .hero-content {
-            max-width: 600px;
+            max-width: 100%;
         }
 
         .hero h1 {
-            font-size: 3rem;
-            line-height: 1.2;
-            margin-bottom: 1rem;
-            color: var(--text-dark);
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+            font-size: 48px;
+            line-height: 1.1;
+            font-weight: 700;
+            color: #14171A;
+            margin-bottom: 16px;
         }
 
         .hero p {
-            font-size: 1.2rem;
-            color: var(--text-gray);
-            margin-bottom: 2rem;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+            font-size: 18px;
+            line-height: 1.5;
+            color: #657786;
+            margin-bottom: 32px;
+            font-weight: 400;
         }
 
         .search-container {
-            background: var(--background-gray);
-            padding: 0.75rem 2rem;
-            border-radius: 50px;
+            background: #F5F8FA;
+            height: 74px;
+            border-radius: 37px;
             display: flex;
             align-items: center;
-            max-width: 600px;
+            padding: 0 24px;
             margin-top: 2rem;
             position: relative;
+            max-width: 600px;
+            margin: 0;
         }
 
         .search-input {
-            flex: 1;
+            width: 100%;
             border: none;
             background: none;
-            padding: 1rem 2.5rem;
-            font-size: 1.2rem;
+            padding: 0 0 0 32px;
+            font-size: 18px;
+            color: #14171A;
+            height: 100%;
             outline: none;
-            color: var(--text-dark);
-            width: 100%;
         }
 
         .search-input::placeholder {
-            color: #999;
+            color: #AAB8C2;
         }
 
         .search-icon {
             position: absolute;
-            left: 2rem;
+            left: 24px;
             top: 50%;
             transform: translateY(-50%);
-            width: 24px;
-            height: 24px;
-            color: #666;
+            width: 20px;
+            height: 20px;
+            color: #657786;
         }
 
-        .search-icon svg {
-            width: 100%;
-            height: 100%;
+        .suggested-section {
+            margin-top: 24px;
+            overflow: hidden;
+        }
+
+        .suggested-label {
+            font-size: 12px;
+            color: #657786;
+            letter-spacing: 0.05em;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        .suggested-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            max-height: 320px;
+            overflow-y: auto;
+            padding-right: 16px;
+            /* Styled scrollbar */
+            scrollbar-width: thin;
+            scrollbar-color: #AAB8C2 #F5F8FA;
+        }
+
+        .suggested-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .suggested-grid::-webkit-scrollbar-track {
+            background: #F5F8FA;
+            border-radius: 3px;
+        }
+
+        .suggested-grid::-webkit-scrollbar-thumb {
+            background-color: #AAB8C2;
+            border-radius: 3px;
+        }
+
+        .suggested-item {
+            height: 72px;
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .suggested-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .suggested-item img {
+            width: 48px;
+            height: 48px;
+            border-radius: 24px;
+            object-fit: cover;
+        }
+
+        .suggested-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .suggested-item-name {
+            font-weight: 600;
+            color: #14171A;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .suggested-item-meta {
+            font-size: 14px;
+            color: #657786;
         }
 
         .feature-carousel {
-            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
-            border-radius: 20px;
-            padding: 2.5rem;
+            background: linear-gradient(135deg, #4263EB 0%, #1E3A8A 100%);
+            border-radius: 24px;
+            padding: 48px;
             color: white;
             position: relative;
+            height: 480px;
             overflow: hidden;
-            height: 360px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .carousel-slides {
+            position: relative;
+            height: 100%;
+            width: 100%;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            visibility: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
         }
 
         .feature-content {
-            max-width: 360px;
+            max-width: 80%;
             position: relative;
             z-index: 2;
         }
 
         .feature-content h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
+            font-size: 40px;
+            margin-bottom: 16px;
             font-weight: 700;
             line-height: 1.2;
         }
 
         .feature-content p {
-            margin-bottom: 2rem;
-            font-size: 1.1rem;
-            line-height: 1.5;
-            opacity: 0.95;
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            color: rgba(255, 255, 255, 0.9);
         }
 
         .feature-content .btn {
             background: white;
-            color: var(--gradient-end);
-            padding: 0.8rem 1.5rem;
+            color: #4263EB;
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-size: 16px;
             font-weight: 600;
-            border-radius: 8px;
             display: inline-block;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .feature-content .btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            opacity: 1;
-        }
-
-        .dot-pattern {
-            position: absolute;
-            top: 1.5rem;
-            right: 1.5rem;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
-        }
-
-        .dot {
-            width: 6px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .carousel-dots {
             position: absolute;
-            bottom: 2.5rem;
-            left: 2.5rem;
+            bottom: 32px;
+            left: 48px;
             display: flex;
-            gap: 0.75rem;
+            gap: 8px;
+            z-index: 3;
         }
 
         .carousel-dot {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.3);
             cursor: pointer;
             transition: all 0.2s;
         }
 
         .carousel-dot.active {
             background: white;
-            transform: scale(1.2);
         }
 
         .category-section {
@@ -343,16 +448,22 @@
 
         .artist-list {
             max-width: 600px;
-            margin: 0 auto;
+            margin: 24px auto;
         }
 
         .artist-item {
             display: flex;
             align-items: center;
-            padding: 1rem;
+            padding: 12px 16px;
             background: white;
-            border-radius: 12px;
-            margin-bottom: 1rem;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .artist-item:hover {
+            background-color: #f8f9fa;
         }
 
         .artist-item:last-child {
@@ -360,15 +471,17 @@
         }
 
         .artist-avatar {
-            width: 48px;
-            height: 48px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            margin-right: 1rem;
+            margin-right: 16px;
+            object-fit: cover;
         }
 
         .artist-name {
             font-weight: 500;
-            color: var(--text-dark);
+            color: #14171A;
+            font-size: 15px;
         }
 
         .footer {
@@ -473,15 +586,14 @@
 
     <header class="header">
         <a href="/" class="logo">
-            🎫 CultureTicks
+            <img src="/images/logo.svg" alt="CultureTicks" height="40">
         </a>
         <nav class="nav-center">
-            <a href="/events.html?category=theater">Theater</a>
             <a href="/events.html?category=music">Music</a>
+            <a href="/events.html?category=theater">Theater</a>
             <a href="/events.html?category=dance">Dance</a>
+            <a href="/events.html?category=opera">Opera</a>
             <a href="/events.html?category=museums">Museums</a>
-            <a href="/events.html?category=festivals">Festivals</a>
-            <a href="/events.html">All Events</a>
         </nav>
         <div class="nav-right">
             <a href="/partner.html" class="btn btn-green">Partner With Us</a>
@@ -494,52 +606,87 @@
         <section class="hero">
             <div class="hero-content">
                 <h1>Direct Access to<br>Arts & Culture.</h1>
-                <p>Your official source for arts and cultural events. Get tickets directly from venues and organizers at face value.</p>
+                <p>Authorized distributor for 100% of tickets sold. Direct from venues and official organizers.</p>
                 <div class="search-container">
-                    <div class="search-icon">
+                    <span class="search-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8"></circle>
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                         </svg>
+                    </span>
+                    <input type="search" class="search-input" placeholder="Search performances, exhibitions, and venues" aria-label="Search events">
+                </div>
+                <div class="suggested-section">
+                    <div class="suggested-label">SUGGESTED FOR YOU</div>
+                    <div class="suggested-grid">
+                        <div class="suggested-item">
+                            <img src="/images/venues/sf-symphony.svg" alt="SF Symphony" width="48" height="48">
+                            <div class="suggested-item-info">
+                                <div class="suggested-item-name">SF Symphony</div>
+                                <div class="suggested-item-meta">Trending</div>
+                            </div>
+                        </div>
+                        <div class="suggested-item">
+                            <img src="/images/venues/sf-ballet.svg" alt="SF Ballet" width="48" height="48">
+                            <div class="suggested-item-info">
+                                <div class="suggested-item-name">SF Ballet</div>
+                                <div class="suggested-item-meta">Popular</div>
+                            </div>
+                        </div>
+                        <div class="suggested-item">
+                            <img src="/images/venues/berkeley-rep.svg" alt="Berkeley Rep" width="48" height="48">
+                            <div class="suggested-item-info">
+                                <div class="suggested-item-name">Berkeley Rep</div>
+                                <div class="suggested-item-meta">Featured</div>
+                            </div>
+                        </div>
+                        <div class="suggested-item">
+                            <img src="/images/venues/sfjazz.svg" alt="SFJAZZ" width="48" height="48">
+                            <div class="suggested-item-info">
+                                <div class="suggested-item-name">SFJAZZ</div>
+                                <div class="suggested-item-meta">New Shows</div>
+                            </div>
+                        </div>
                     </div>
-                    <input 
-                        type="search" 
-                        class="search-input" 
-                        placeholder="Search performances, exhibitions, and venues"
-                        aria-label="Search events">
                 </div>
             </div>
             <div class="feature-carousel">
-                <div class="dot-pattern">
-                    <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
-                    <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
-                    <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
-                    <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
-                </div>
-                <div class="feature-content">
-                    <h2>Official<br>Partner Network</h2>
-                    <p>We work directly with leading theaters, museums, and cultural venues to provide authentic, face-value tickets.</p>
-                    <a href="/partners" class="btn">Our Partners</a>
+                <div class="carousel-slides">
+                    <div class="slide active">
+                        <div class="feature-content">
+                            <h2>Official Partner Network</h2>
+                            <p>We work directly with leading theaters, museums, and cultural venues to provide authentic, face-value tickets.</p>
+                            <a href="/partners" class="btn">Our Partners</a>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="feature-content">
+                            <h2>Transparent Pricing</h2>
+                            <p>No hidden fees, no surprises. The price you see is the price you pay. Save more on your cultural experiences.</p>
+                            <a href="/pricing" class="btn">Learn More</a>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="feature-content">
+                            <h2>Exclusive Access</h2>
+                            <p>Get early access to premier cultural events and special exhibitions. Never miss out on must-see performances.</p>
+                            <a href="/events" class="btn">Browse Events</a>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="feature-content">
+                            <h2>100% Guaranteed</h2>
+                            <p>Every ticket is verified and guaranteed. Enjoy your events with complete peace of mind.</p>
+                            <a href="/guarantee" class="btn">Our Guarantee</a>
+                        </div>
+                    </div>
                 </div>
                 <div class="carousel-dots">
                     <div class="carousel-dot active"></div>
                     <div class="carousel-dot"></div>
                     <div class="carousel-dot"></div>
+                    <div class="carousel-dot"></div>
                 </div>
-                <style>
-                    .feature-carousel::before {
-                        content: '';
-                        position: absolute;
-                        right: -10%;
-                        bottom: -10%;
-                        width: 60%;
-                        height: 60%;
-                        background: url('https://images.unsplash.com/photo-1485686531765-ba63b07845a7?q=80&w=800&auto=format&fit=crop') center/cover;
-                        border-radius: 12px;
-                        opacity: 0.15;
-                        transform: rotate(-5deg);
-                    }
-                </style>
             </div>
         </section>
 
@@ -602,20 +749,44 @@
             <p class="subtitle">Top Performing Artists</p>
             <div class="artist-list">
                 <div class="artist-item">
-                    <img src="https://images.unsplash.com/photo-1549834125-82d3c48159a3" alt="National Symphony Orchestra" class="artist-avatar">
-                    <div class="artist-name">National Symphony Orchestra</div>
+                    <img src="images/artists/placeholder.svg" width="40" height="40" alt="Anne-Sophie Mutter" class="artist-avatar" onerror="this.src='images/artists/placeholder.svg'">
+                    <div class="artist-name">Anne-Sophie Mutter</div>
                 </div>
                 <div class="artist-item">
-                    <img src="https://images.unsplash.com/photo-1547355253-ff0740f6e8c1" alt="Royal Ballet Company" class="artist-avatar">
-                    <div class="artist-name">Royal Ballet Company</div>
+                    <img src="images/artists/placeholder.svg" width="40" height="40" alt="Yo-Yo Ma" class="artist-avatar" onerror="this.src='images/artists/placeholder.svg'">
+                    <div class="artist-name">Yo-Yo Ma</div>
                 </div>
                 <div class="artist-item">
-                    <img src="https://images.unsplash.com/photo-1551641506-ee5bf4cb45f1" alt="Metropolitan Opera" class="artist-avatar">
-                    <div class="artist-name">Metropolitan Opera</div>
+                    <img src="images/artists/placeholder.svg" width="40" height="40" alt="Jonas Kaufmann" class="artist-avatar" onerror="this.src='images/artists/placeholder.svg'">
+                    <div class="artist-name">Jonas Kaufmann</div>
                 </div>
                 <div class="artist-item">
-                    <img src="https://images.unsplash.com/photo-1558584673-c834fb1cc3ca" alt="Broadway Ensemble" class="artist-avatar">
-                    <div class="artist-name">Broadway Ensemble</div>
+                    <img src="images/artists/placeholder.svg" width="40" height="40" alt="Misty Copeland" class="artist-avatar" onerror="this.src='images/artists/placeholder.svg'">
+                    <div class="artist-name">Misty Copeland</div>
+                </div>
+                <div class="artist-item">
+                    <img src="images/artists/placeholder.svg" width="40" height="40" alt="Natalia Osipova" class="artist-avatar" onerror="this.src='images/artists/placeholder.svg'">
+                    <div class="artist-name">Natalia Osipova</div>
+                </div>
+                <div class="artist-item">
+                    <img src="images/artists/placeholder.svg" width="40" height="40" alt="Renée Fleming" class="artist-avatar" onerror="this.src='images/artists/placeholder.svg'">
+                    <div class="artist-name">Renée Fleming</div>
+                </div>
+                <div class="artist-item">
+                    <img src="images/artists/placeholder.svg" width="40" height="40" alt="Anna Netrebko" class="artist-avatar" onerror="this.src='images/artists/placeholder.svg'">
+                    <div class="artist-name">Anna Netrebko</div>
+                </div>
+                <div class="artist-item">
+                    <img src="images/artists/placeholder.svg" width="40" height="40" alt="Lin-Manuel Miranda" class="artist-avatar" onerror="this.src='images/artists/placeholder.svg'">
+                    <div class="artist-name">Lin-Manuel Miranda</div>
+                </div>
+                <div class="artist-item">
+                    <img src="images/artists/placeholder.svg" width="40" height="40" alt="Elīna Garanča" class="artist-avatar" onerror="this.src='images/artists/placeholder.svg'">
+                    <div class="artist-name">Elīna Garanča</div>
+                </div>
+                <div class="artist-item">
+                    <img src="images/artists/placeholder.svg" width="40" height="40" alt="Patti LuPone" class="artist-avatar" onerror="this.src='images/artists/placeholder.svg'">
+                    <div class="artist-name">Patti LuPone</div>
                 </div>
             </div>
         </section>
@@ -661,12 +832,12 @@
                         </a>
                         <a href="#" aria-label="Twitter">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M23.643 4.937c-.835.37-1.732.62-2.675.733.962-.576 1.7-1.49 2.048-2.578-.9.534-1.897.922-2.958 1.13-.85-.904-2.06-1.47-3.4-1.47-2.572 0-4.658 2.086-4.658 4.66 0 .364.042.718.12 1.06-3.873-.195-7.304-2.05-9.602-4.868-.4.69-.63 1.49-.63 2.342 0 1.616.823 3.043 2.072 3.878-.764-.025-1.482-.234-2.11-.583v.06c0 2.257 1.605 4.14 3.737 4.568-.392.106-.803.162-1.227.162-.3 0-.593-.028-.877-.082.593 1.85 2.313 3.198 4.352 3.234-1.595 1.25-3.604 1.995-5.786 1.995-.376 0-.747-.022-1.112-.065 2.062 1.323 4.51 2.093 7.14 2.093 8.57 0 13.255-7.098 13.255-13.254 0-.2-.005-.402-.014-.602.91-.658 1.7-1.477 2.323-2.41z"/>
+                                <path d="M23.643 4.937c-.835.37-1.732.62-2.675.733.962-.576 1.7-1.49 2.048-2.578-.9.534-1.897.922-2.958 1.13-.85-.904-2.06-1.47-3.4-1.47-2.572 0-4.658 2.086-4.658 4.66 0 .364.042.718.12 1.06-3.873-.195-7.304-2.05-9.602-4.868-.4.69-.63 1.49-.63 2.342 0 1.616.823 3.043 2.072 3.878-.764-.025-1.482-.234-2.11-.583v.06c0 2.257 1.605 4.14 3.737 4.568-.392.106-.803.162-1.227.162-.3 0-.593-.028-.877-.082 2.062 1.323 4.51 2.093 7.14 2.093 8.57 0 13.255-7.098 13.255-13.254 0-.2-.005-.402-.014-.602.91-.658 1.7-1.477 2.323-2.41z"/>
                             </svg>
                         </a>
                         <a href="#" aria-label="Instagram">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266-.058 1.644-.07 4.849-.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266-.058 1.644-.07 4.849-.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12 0c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
                             </svg>
                         </a>
                     </div>
@@ -719,6 +890,53 @@
                 console.error('Error loading suggested events:', error);
             }
         }
+
+        // Carousel functionality
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.carousel-dot');
+        let currentSlide = 0;
+        const slideInterval = 5000; // 5 seconds
+
+        function goToSlide(index) {
+            // Remove active class from current slide and dot
+            slides[currentSlide].classList.remove('active');
+            dots[currentSlide].classList.remove('active');
+            
+            // Update current slide
+            currentSlide = index;
+            
+            // Add active class to new slide and dot
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+        }
+
+        function nextSlide() {
+            const next = (currentSlide + 1) % slides.length;
+            goToSlide(next);
+        }
+
+        // Add click handlers to dots
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                goToSlide(index);
+                // Reset interval
+                clearInterval(slideTimer);
+                slideTimer = setInterval(nextSlide, slideInterval);
+            });
+        });
+
+        // Start the carousel
+        let slideTimer = setInterval(nextSlide, slideInterval);
+
+        // Pause on hover
+        const carousel = document.querySelector('.feature-carousel');
+        carousel.addEventListener('mouseenter', () => {
+            clearInterval(slideTimer);
+        });
+
+        carousel.addEventListener('mouseleave', () => {
+            slideTimer = setInterval(nextSlide, slideInterval);
+        });
 
         // Initialize
         loadSuggestedEvents();
